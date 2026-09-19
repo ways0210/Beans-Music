@@ -121,13 +121,20 @@ final class DownloadManager {
                 continue
             }
 
-            // 3) 保存到临时目录（不占用户存储；分享面板自带「存储到文件 / 转发」选项）
-            let dir = destinationDirectory ?? FileManager.default.temporaryDirectory
-                .appendingPathComponent("BeansShare", isDirectory: true)
-            try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-            let safeName = "\(song.name) - \(song.artists)"
-                .replacingOccurrences(of: "/", with: "-")
-                .replacingOccurrences(of: ":", with: "-")
+       // 3）保存到DownloadMusic永久目录，App关闭不会自动删除
+let docRoot = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+let dir = docRoot.appendingPathComponent("DownloadMusic")
+try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let artistFixed = song.artists.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: " / ", with: "、").replacingOccurrences(of: "/", with: "、")
+let titleFixed = song.name.trimmingCharacters(in: .whitespacesAndNewlines)
+    .replacingOccurrences(of: "/", with: "-")
+    .replacingOccurrences(of: ":", with: "-")
+var safeName: String
+if artistFixed.isEmpty {
+    safeName = titleFixed
+} else {
+    safeName = "\(artistFixed) - \(titleFixed)"
+}
             let actualQuality = resolved.actualQuality
             let ext = fileExtension(for: resolved.url, response: response, quality: actualQuality, fileURL: tempURL)
             let dest = availableDestination(
@@ -136,25 +143,32 @@ final class DownloadManager {
                 in: dir
             )
             do {
-                try FileManager.default.moveItem(at: tempURL, to: dest)
-            } catch {
-                lastError = NetEaseError.unknown("保存失败：\(error.localizedDescription)")
-                continue
-            }
-            let downgraded = index > 0 || actualQuality != quality
-            BeansLogger.shared.log(
-                "下载成功：\(song.name) 平台=\(song.source.rawValue) 请求音质=\(quality.rawValue) 实际音质=\(actualQuality.rawValue) 降级=\(downgraded ? "是" : "否") 地址=\(safeURLSummary(resolved.url))",
-                level: .info
-            )
-            return .success(
-                DownloadResult(
-                    url: dest,
-                    requestedQuality: quality,
-                    actualQuality: actualQuality,
-                    downgraded: downgraded,
-                    sourceName: resolved.sourceName
-                )
-            )
+    //永久保存到DownloadMusic
+    try FileManager.default.copyItem(at: tempURL, to: dest)
+    //生成一个用于分享、带正确歌名的临时文件
+    let shareTempDir = FileManager.default.temporaryDirectory
+    let shareURL = shareTempDir.appendingPathComponent(safeName + "." + ext)
+    try? FileManager.default.copyItem(at: tempURL, to: shareURL)
+    
+    let downgraded = index > 0 || actualQuality != quality
+    BeansLogger.shared.log(
+        "下载成功：\(song.name) 平台=\(song.source.rawValue)",
+        level: .info
+    )
+    
+    return .success(
+        DownloadResult(
+            url: shareURL,
+            requestedQuality: quality,
+            actualQuality: actualQuality,
+            downgraded: downgraded,
+            sourceName: resolved.sourceName
+        )
+    )
+} catch {
+    lastError = NetEaseError.unknown("保存失败")
+    continue
+}
         }
         BeansLogger.shared.log(
             "下载失败：\(song.name) 平台=\(song.source.rawValue) 请求音质=\(quality.rawValue) 所有候选质量均失败",

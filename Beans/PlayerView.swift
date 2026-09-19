@@ -1054,11 +1054,11 @@ struct PlayerView: View {
                 showAddToLocalPlaylist = true
             }
             customCoverActions
-            if downloadFeatureUnlocked {
+            
                 Button("下载歌曲") {
                     showDownloadPicker = true
                 }
-            }
+            
             Button("播放器设置") {
                 openPlayerSettings()
             }
@@ -1382,9 +1382,9 @@ struct PlayerView: View {
                     Divider()
                     Button("定时关闭") { showSleepTimer = true }
                     Button("添加到本地歌单") { showAddToLocalPlaylist = true }
-                    if downloadFeatureUnlocked {
-                        Button("下载歌曲") { showDownloadPicker = true }
-                    }
+                    
+                    Button("下载歌曲") { showDownloadPicker = true }
+                    
                     Button("播放器设置") { openPlayerSettings() }
                 } label: {
                     Image(systemName: "ellipsis")
@@ -1482,9 +1482,9 @@ struct PlayerView: View {
                     Button("定时关闭") { showSleepTimer = true }
                     Button("添加到本地歌单") { showAddToLocalPlaylist = true }
                     customCoverActions
-                    if downloadFeatureUnlocked {
-                        Button("下载歌曲") { showDownloadPicker = true }
-                    }
+                    
+                    Button("下载歌曲") { showDownloadPicker = true }
+                    
                     Button("播放器设置") { openPlayerSettings() }
                 } label: {
                     Image(systemName: "ellipsis")
@@ -1865,9 +1865,9 @@ struct PlayerView: View {
                 Menu {
                     Button("定时关闭") { showSleepTimer = true }
                     Button("添加到本地歌单") { showAddToLocalPlaylist = true }
-                    if downloadFeatureUnlocked {
-                        Button("下载歌曲") { showDownloadPicker = true }
-                    }
+                    
+                    Button("下载歌曲") { showDownloadPicker = true }
+                    
                     Button("播放器设置") { openPlayerSettings() }
                 } label: {
                     Image(systemName: "ellipsis")
@@ -1938,12 +1938,12 @@ struct PlayerView: View {
                     ToastCenter.shared.show("已恢复默认封面")
                 }
             }
-            if downloadFeatureUnlocked {
+            
                 moreActionRow("下载歌曲", systemName: "arrow.down.circle") {
                     showMoreActions = false
                     showDownloadPicker = true
                 }
-            }
+            
             moreActionRow("播放器设置", systemName: "slider.horizontal.3") {
                 showMoreActions = false
                 openPlayerSettings()
@@ -2148,9 +2148,9 @@ struct PlayerView: View {
                 Button("定时关闭") { showSleepTimer = true }
                 Button("添加到本地歌单") { showAddToLocalPlaylist = true }
                 customCoverActions
-                if downloadFeatureUnlocked {
-                    Button("下载歌曲") { showDownloadPicker = true }
-                }
+                
+                Button("下载歌曲") { showDownloadPicker = true }
+                
                 Button("播放器设置") { openPlayerSettings() }
             } label: {
                 Image(systemName: "ellipsis")
@@ -2323,9 +2323,9 @@ struct PlayerView: View {
                 Button("定时关闭") { showSleepTimer = true }
                 Button("添加到本地歌单") { showAddToLocalPlaylist = true }
                 customCoverActions
-                if downloadFeatureUnlocked {
-                    Button("下载歌曲") { showDownloadPicker = true }
-                }
+                
+                Button("下载歌曲") { showDownloadPicker = true }
+                
                 Button("播放器设置") { openPlayerSettings() }
             } label: {
                 Image(systemName: "ellipsis")
@@ -2807,10 +2807,10 @@ struct PlayerView: View {
                     controlPanelAction(icon: "text.bubble", title: "评论") {
                         showComments = true
                     }
-                    if downloadFeatureUnlocked {
+                    
                         controlPanelAction(icon: "arrow.down.circle", title: "下载") {
                             showDownloadPicker = true
-                        }
+                        
                     }
                     controlPanelAction(icon: "ellipsis", title: "更多") {
                         showNativeMoreActions = true

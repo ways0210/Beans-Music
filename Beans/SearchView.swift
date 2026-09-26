@@ -202,7 +202,7 @@ SearchTextField(
     onSubmit: onSubmit,
     isEditing: $isTextFieldEditing
 )
-            )
+            
             .frame(height: 32)
             .frame(maxWidth: .infinity)
             ZStack {

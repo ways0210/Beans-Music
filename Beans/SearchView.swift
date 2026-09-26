@@ -166,7 +166,6 @@ struct BeansUnifiedSearchField: View {
     let isSearching: Bool
     let onClear: () -> Void
     let onSubmit: (String) -> Void
-    @Binding var isTextFieldEditing: Bool
 
     @ViewBuilder
     var body: some View {
@@ -194,15 +193,13 @@ struct BeansUnifiedSearchField: View {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 15, weight: .medium))
                 .foregroundStyle(Color.beansComment)
-SearchTextField(
-    text: $text,
-    controller: controller ?? fallbackController,
-    placeholder: placeholder,
-    textColor: UIColor.beansLabel,
-    onSubmit: onSubmit,
-    isEditing: $isTextFieldEditing
-)
-            
+            SearchTextField(
+                text: $text,
+                controller: controller ?? fallbackController,
+                placeholder: placeholder,
+                textColor: UIColor.beansLabel,
+                onSubmit: onSubmit
+            )
             .frame(height: 32)
             .frame(maxWidth: .infinity)
             ZStack {
@@ -308,9 +305,6 @@ struct SearchView: View {
     @State private var selectedDownloadSong: Song?
     @State private var showProfile = false
     @State private var artistCoverCache: [String: URL] = [:]
-    // === 修复新增状态 ===
-    @State private var lastSearchedText: String = ""
-    @State private var isTextFieldEditing = false
     /// UIKit 输入框控制器（提交拼音、收起键盘等由它统一处理）
     @State private var searchController = SearchFieldController()
     @AppStorage(BeansBackendSettings.downloadUnlockKey) private var downloadFeatureUnlocked = false
@@ -552,28 +546,31 @@ struct SearchView: View {
             }
             .frame(maxWidth: .infinity, alignment: .top)
         }
-    
-    // MARK: - 搜索框
-BeansUnifiedSearchField(
-    text: $keyword,
-    controller: searchController,
-    placeholder: "搜索歌曲、歌手、专辑",
-    isSearching: searching,
-    onClear: {
-        songResults = []
-        artistResults = []
-        albumResults = []
-        playlistResults = []
-        errorMessage = nil
-        debounceTask?.cancel()
-    },
-    onSubmit: submitSearch,
-    isTextFieldEditing: $isTextFieldEditing
-)
+    }
 
-private func submitSearch(_ text: String) {
-    performSearch(text)
-}
+    // MARK: - 搜索框
+
+    private var searchField: some View {
+        BeansUnifiedSearchField(
+            text: $keyword,
+            controller: searchController,
+            placeholder: provider == .bilibili ? "搜索视频、UP主或合集" : beansLocalized("搜索歌曲、歌手、专辑", "Search songs, artists, or albums"),
+            isSearching: searching,
+            onClear: {
+                songResults = []
+                artistResults = []
+                albumResults = []
+                playlistResults = []
+                errorMessage = nil
+                debounceTask?.cancel()
+            },
+            onSubmit: submitSearch
+        )
+    }
+
+    private func submitSearch(_ text: String) {
+        performSearch(text)
+    }
 
     private func performSearch(_ text: String) {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -595,7 +592,7 @@ private func submitSearch(_ text: String) {
         guard UserDefaults.standard.string(forKey: "beans.homeSource") != homeSourceSnapshot else { return }
         UserDefaults.standard.set(homeSourceSnapshot, forKey: "beans.homeSource")
     }
-    
+
     // MARK: - 搜索结果平台选择
 
     private var resultProviderPicker: some View {
@@ -2653,7 +2650,6 @@ struct SearchTextField: UIViewRepresentable {
     var placeholder: String = ""
     let textColor: UIColor
     let onSubmit: (String) -> Void
-    @Binding var isEditing: Bool
 
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
@@ -2681,7 +2677,7 @@ struct SearchTextField: UIViewRepresentable {
     func updateUIView(_ uiView: UITextField, context: Context) {
         // 同步最新绑定值；同时刷新 coordinator 持有的父视图，保证闭包/绑定始终是最新实例
         context.coordinator.parent = self
-        if !isEditing, uiView.markedTextRange == nil, uiView.text != text {
+        if uiView.markedTextRange == nil, uiView.text != text {
             uiView.text = text
         }
         controller.textField = uiView
@@ -2702,9 +2698,7 @@ struct SearchTextField: UIViewRepresentable {
         @objc func textChanged(_ field: UITextField) {
             parent.text = field.text ?? ""
         }
-func textFieldDidBeginEditing(_ field: UITextField) {
-    parent.isEditing = true
-}
+
         func textFieldShouldReturn(_ field: UITextField) -> Bool {
             // 输入法回车：先强制提交拼音再读取，确保拿到完整中文文本
             if field.markedTextRange != nil {
@@ -2718,8 +2712,7 @@ func textFieldDidBeginEditing(_ field: UITextField) {
         }
 
         func textFieldDidEndEditing(_ field: UITextField) {
-    parent.text = field.text ?? ""
-    parent.isEditing = false
+            parent.text = field.text ?? ""
         }
     }
 }

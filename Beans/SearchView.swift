@@ -305,6 +305,9 @@ struct SearchView: View {
     @State private var selectedDownloadSong: Song?
     @State private var showProfile = false
     @State private var artistCoverCache: [String: URL] = [:]
+    // === 修复新增状态 ===
+    @State private var lastSearchedText: String = ""
+    @State private var isTextFieldEditing = false
     /// UIKit 输入框控制器（提交拼音、收起键盘等由它统一处理）
     @State private var searchController = SearchFieldController()
     @AppStorage(BeansBackendSettings.downloadUnlockKey) private var downloadFeatureUnlocked = false

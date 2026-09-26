@@ -569,9 +569,12 @@ BeansUnifiedSearchField(
         debounceTask?.cancel()
     },
     onSubmit: submitSearch,
-    isTextFieldEditing: $isTextFieldEditing // 新增这一行！
+    isTextFieldEditing: $isTextFieldEditing
 )
-    }
+
+private func submitSearch(_ text: String) {
+    performSearch(text)
+}
 
     private func submitSearch(_ text: String) {
         performSearch(text)

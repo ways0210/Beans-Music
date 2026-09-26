@@ -166,6 +166,7 @@ struct BeansUnifiedSearchField: View {
     let isSearching: Bool
     let onClear: () -> Void
     let onSubmit: (String) -> Void
+    @Binding var isTextFieldEditing: Bool
 
     @ViewBuilder
     var body: some View {
@@ -536,19 +537,22 @@ struct SearchView: View {
     }
 
     // MARK: - 内容区（热搜 / 分类+结果 固定占满剩余高度，切换不引起布局跳动）
-
-    @ViewBuilder
-    private var contentArea: some View {
-        if keyword.isEmpty {
-            hotSection
-        } else {
-            VStack(spacing: 0) {
-                resultProviderPicker
-                typeTabs
-                resultsArea
-            }
-            .frame(maxWidth: .infinity, alignment: .top)
-        }
+    BeansUnifiedSearchField(
+    text: $keyword,
+    controller: searchController,
+    placeholder: provider == .bilibili ? "搜索B站UP主" : "搜索歌曲、歌手、专辑",
+    isSearching: searching,
+    onClear: {
+        songResults = []
+        artistResults = []
+        albumResults = []
+        playlistResults = []
+        errorMessage = nil
+        debounceTask?.cancel()
+    },
+    onSubmit: submitSearch,
+    isTextFieldEditing: $isTextFieldEditing // 新增这一行！
+)
     }
 
     // MARK: - 搜索框

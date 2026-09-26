@@ -2655,6 +2655,7 @@ struct SearchTextField: UIViewRepresentable {
     var placeholder: String = ""
     let textColor: UIColor
     let onSubmit: (String) -> Void
+    @Binding var isEditing: Bool
 
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
@@ -2682,7 +2683,7 @@ struct SearchTextField: UIViewRepresentable {
     func updateUIView(_ uiView: UITextField, context: Context) {
         // 同步最新绑定值；同时刷新 coordinator 持有的父视图，保证闭包/绑定始终是最新实例
         context.coordinator.parent = self
-        if uiView.markedTextRange == nil, uiView.text != text {
+        if !isEditing, uiView.markedTextRange == nil, uiView.text != text {
             uiView.text = text
         }
         controller.textField = uiView
@@ -2703,7 +2704,9 @@ struct SearchTextField: UIViewRepresentable {
         @objc func textChanged(_ field: UITextField) {
             parent.text = field.text ?? ""
         }
-
+func textFieldDidBeginEditing(_ field: UITextField) {
+    parent.isEditing = true
+}
         func textFieldShouldReturn(_ field: UITextField) -> Bool {
             // 输入法回车：先强制提交拼音再读取，确保拿到完整中文文本
             if field.markedTextRange != nil {
@@ -2717,7 +2720,8 @@ struct SearchTextField: UIViewRepresentable {
         }
 
         func textFieldDidEndEditing(_ field: UITextField) {
-            parent.text = field.text ?? ""
+    parent.text = field.text ?? ""
+    parent.isEditing = false
         }
     }
 }

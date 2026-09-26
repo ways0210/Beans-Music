@@ -557,9 +557,9 @@ struct SearchView: View {
     // MARK: - 搜索框
 BeansUnifiedSearchField(
     text: $keyword,
-controller: searchController,
-placeholder: provider == .bilibili ? "搜索B站UP主" : "搜索歌曲、歌手、专辑",
-isSearching: searching,
+    controller: searchController,
+    placeholder: "搜索歌曲、歌手、专辑",
+    isSearching: searching,
     onClear: {
         songResults = []
         artistResults = []

@@ -166,6 +166,7 @@ struct BeansUnifiedSearchField: View {
     let isSearching: Bool
     let onClear: () -> Void
     let onSubmit: (String) -> Void
+    @Binding var isTextFieldEditing: Bool
 
     @ViewBuilder
     var body: some View {
@@ -193,12 +194,14 @@ struct BeansUnifiedSearchField: View {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 15, weight: .medium))
                 .foregroundStyle(Color.beansComment)
-            SearchTextField(
-                text: $text,
-                controller: controller ?? fallbackController,
-                placeholder: placeholder,
-                textColor: UIColor.beansLabel,
-                onSubmit: onSubmit
+SearchTextField(
+    text: $text,
+    controller: controller ?? fallbackController,
+    placeholder: placeholder,
+    textColor: UIColor.beansLabel,
+    onSubmit: onSubmit,
+    isEditing: $isTextFieldEditing
+)
             )
             .frame(height: 32)
             .frame(maxWidth: .infinity)
@@ -305,6 +308,9 @@ struct SearchView: View {
     @State private var selectedDownloadSong: Song?
     @State private var showProfile = false
     @State private var artistCoverCache: [String: URL] = [:]
+    // === 修复新增状态 ===
+    @State private var lastSearchedText: String = ""
+    @State private var isTextFieldEditing = false
     /// UIKit 输入框控制器（提交拼音、收起键盘等由它统一处理）
     @State private var searchController = SearchFieldController()
     @AppStorage(BeansBackendSettings.downloadUnlockKey) private var downloadFeatureUnlocked = false
@@ -549,23 +555,22 @@ struct SearchView: View {
     }
 
     // MARK: - 搜索框
-
-    private var searchField: some View {
-        BeansUnifiedSearchField(
-            text: $keyword,
-            controller: searchController,
-            placeholder: provider == .bilibili ? "搜索视频、UP主或合集" : beansLocalized("搜索歌曲、歌手、专辑", "Search songs, artists, or albums"),
-            isSearching: searching,
-            onClear: {
-                songResults = []
-                artistResults = []
-                albumResults = []
-                playlistResults = []
-                errorMessage = nil
-                debounceTask?.cancel()
-            },
-            onSubmit: submitSearch
-        )
+BeansUnifiedSearchField(
+    text: $keyword,
+    controller: searchController,
+    placeholder: provider == .bilibili ? "搜索B站UP主" : "搜索歌曲、歌手、专辑",
+    isSearching: searching,
+    onClear: {
+        songResults = []
+        artistResults = []
+        albumResults = []
+        playlistResults = []
+        errorMessage = nil
+        debounceTask?.cancel()
+    },
+    onSubmit: submitSearch,
+    isTextFieldEditing: $isTextFieldEditing // 新增这一行！
+)
     }
 
     private func submitSearch(_ text: String) {

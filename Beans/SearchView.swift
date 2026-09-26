@@ -166,7 +166,6 @@ struct BeansUnifiedSearchField: View {
     let isSearching: Bool
     let onClear: () -> Void
     let onSubmit: (String) -> Void
-    @Binding var isTextFieldEditing: Bool
 
     @ViewBuilder
     var body: some View {
@@ -306,9 +305,6 @@ struct SearchView: View {
     @State private var selectedDownloadSong: Song?
     @State private var showProfile = false
     @State private var artistCoverCache: [String: URL] = [:]
-    // === 修复新增状态 ===
-    @State private var lastSearchedText: String = ""
-    @State private var isTextFieldEditing = false
     /// UIKit 输入框控制器（提交拼音、收起键盘等由它统一处理）
     @State private var searchController = SearchFieldController()
     @AppStorage(BeansBackendSettings.downloadUnlockKey) private var downloadFeatureUnlocked = false
@@ -537,22 +533,19 @@ struct SearchView: View {
     }
 
     // MARK: - 内容区（热搜 / 分类+结果 固定占满剩余高度，切换不引起布局跳动）
-    BeansUnifiedSearchField(
-    text: $keyword,
-    controller: searchController,
-    placeholder: provider == .bilibili ? "搜索B站UP主" : "搜索歌曲、歌手、专辑",
-    isSearching: searching,
-    onClear: {
-        songResults = []
-        artistResults = []
-        albumResults = []
-        playlistResults = []
-        errorMessage = nil
-        debounceTask?.cancel()
-    },
-    onSubmit: submitSearch,
-    isTextFieldEditing: $isTextFieldEditing // 新增这一行！
-)
+
+    @ViewBuilder
+    private var contentArea: some View {
+        if keyword.isEmpty {
+            hotSection
+        } else {
+            VStack(spacing: 0) {
+                resultProviderPicker
+                typeTabs
+                resultsArea
+            }
+            .frame(maxWidth: .infinity, alignment: .top)
+        }
     }
 
     // MARK: - 搜索框

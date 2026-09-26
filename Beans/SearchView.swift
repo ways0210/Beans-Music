@@ -552,8 +552,7 @@ struct SearchView: View {
             }
             .frame(maxWidth: .infinity, alignment: .top)
         }
-    }
-
+    
     // MARK: - 搜索框
 BeansUnifiedSearchField(
     text: $keyword,
@@ -596,7 +595,7 @@ private func submitSearch(_ text: String) {
         guard UserDefaults.standard.string(forKey: "beans.homeSource") != homeSourceSnapshot else { return }
         UserDefaults.standard.set(homeSourceSnapshot, forKey: "beans.homeSource")
     }
-
+    
     // MARK: - 搜索结果平台选择
 
     private var resultProviderPicker: some View {
